@@ -1,6 +1,6 @@
 # ur5_ROS-Gazebo_melodic
 
-https://github.com/lihuang3/ur5_ROS-Gazebo
+original Repo: https://github.com/lihuang3/ur5_ROS-Gazebo
 
 updated this repo to work with melodic.
 
