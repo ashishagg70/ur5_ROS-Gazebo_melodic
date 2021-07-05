@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+	<name>pugixml</name>
+	<version>1.7.1</version>
+	<description>
+    		This package is pugixml.
+	</description>
+	<author email="jl.sanchez@upm.es">Jose Luis Sanchez-Lopez</author>
+	<maintainer email="jl.sanchez@upm.es">Jose Luis Sanchez-Lopez</maintainer>
+	<license>BSD</license>
+	<url>http://ros.org/wiki/pugixml</url>
+
+	<buildtool_depend>catkin</buildtool_depend>
+
+
+</package>
+

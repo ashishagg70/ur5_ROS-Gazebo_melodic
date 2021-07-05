@@ -27,6 +27,7 @@ import moveit_commander
 from copy import deepcopy
 from geometry_msgs.msg import Twist
 import moveit_msgs.msg
+import geometry_msgs
 from sensor_msgs.msg import Image
 from ur5_notebook.msg import Tracker
 from std_msgs.msg import Header
@@ -64,7 +65,6 @@ class ur5_mp:
 
         # Get the name of the end-effector link
         self.end_effector_link = self.arm.get_end_effector_link()
-
         # Set the reference frame for pose targets
         reference_frame = "base_link"
 
@@ -136,7 +136,18 @@ class ur5_mp:
         plan = self.arm.plan()
 
         self.arm.execute(plan)
-
+	
+##our code
+	pose_goal = geometry_msgs.msg.Pose()
+	pose_goal.orientation.w = 1.0
+	pose_goal.position.x = 0.4
+	pose_goal.position.y = 0.1
+	pose_goal.position.z = 0.4
+	self.arm.set_pose_target(pose_goal)
+	plan = self.arm.go(wait=True)
+	self.arm.stop()
+	self.arm.clear_pose_targets()
+##our code end
         # Specify end states (drop object)
         self.end_joint_states = deepcopy(self.default_joint_states)
         self.end_joint_states[0] = -3.65

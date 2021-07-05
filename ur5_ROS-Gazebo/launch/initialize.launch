@@ -49,7 +49,6 @@
   <node name="blocks_poses_publisher" pkg="ur5_notebook" type="blocks_poses_publisher" output="screen" />
 
   <!-- the cylinder poses publisher node -->
-  <node name="ur5_vision" pkg="ur5_notebook" type="ur5_vision.py" output="screen" />
   <node name="ur5_mp" pkg="ur5_notebook" type="ur5_mp.py" output="screen" />
   <node name="ur5_gripper" pkg="ur5_notebook" type="ur5_gripper.py" output="screen"/>
   <!-- for ros control to be used with scara robot -->

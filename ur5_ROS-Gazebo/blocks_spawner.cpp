@@ -17,7 +17,7 @@
   #include <gazebo_msgs/ApplyBodyWrench.h>
   #include <std_msgs/Int8MultiArray.h>
   #include <gazebo_msgs/SetModelState.h>
-
+  #include "pugixml.hpp"
   //int to string converter
   std::string intToString (int a) {
      std::stringstream ss;
@@ -39,8 +39,16 @@
       gazebo_msgs::ApplyBodyWrench::Response apply_wrench_resp;
 
       ros::ServiceClient setstateClient = nh.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
-      gazebo_msgs::ApplyBodyWrench::Request set_state_req;
-      gazebo_msgs::ApplyBodyWrench::Response set_state_resp;
+      gazebo_msgs::SetModelState::Request set_state_req;
+      gazebo_msgs::SetModelState::Response set_state_resp;
+
+      set_state_req.model_state.pose.position.x=2.0;
+      set_state_req.model_state.pose.position.y=0;
+      set_state_req.model_state.pose.position.z=0.2;
+      set_state_req.model_state.twist.linear.x=-0.5;
+      set_state_req.model_state.reference_frame="world";
+
+    
 
       //publisher for current_blocks
       ros::Publisher current_blocks_publisher = nh.advertise<std_msgs::Int8MultiArray>("current_blocks",1);
@@ -81,17 +89,23 @@
           return 0;}
           else{ROS_INFO_STREAM(red_box_path << " has been extracted");
 }
+      pugi::xml_document doc;
 
-      std::ifstream red_inXml(red_box_path.c_str());
+      pugi::xml_parse_result result = doc.load_file(red_box_path.c_str());
+      //std::string str = doc.child("robot").attribute("name").value();
+      doc.select_node("/robot/link/collision/geometry/box").node().attribute("size").set_value("0.1 0.1 0.1");
+      doc.select_node("/robot/link/visual/geometry/box").node().attribute("size").set_value("0.1 0.1 0.1");
+      /*std::ifstream red_inXml(red_box_path.c_str());*/
       std::stringstream red_strStream;
       std::string red_xmlStr;
-
+      doc.save(red_strStream,"  ");
       /*red_inXml.open(red_box_path.c_str());*/
-      red_strStream << red_inXml.rdbuf();
+      //red_strStream << red_inXml.rdbuf();
       red_xmlStr = red_strStream.str();
+      ROS_INFO_STREAM("ashish: "<<red_xmlStr);
      // ROS_INFO_STREAM("urdf: \n" <<red_xmlStr);
       // prepare the pawn model service message
-      spawn_model_req.initial_pose.position.x = 2;
+      spawn_model_req.initial_pose.position.x = 0;
       spawn_model_req.initial_pose.position.z = 0.2;
       spawn_model_req.initial_pose.orientation.x=0.0;
       spawn_model_req.initial_pose.orientation.y=0.0;
@@ -101,7 +115,7 @@
 
       ros::Time time_temp(0, 0);
       ros::Duration duration_temp(0, 1000000);
-      apply_wrench_req.wrench.force.x = -5.1;
+      apply_wrench_req.wrench.force.x = -100;
       apply_wrench_req.wrench.force.y = 0.0;
       apply_wrench_req.wrench.force.z = 0.0;
       apply_wrench_req.start_time = time_temp;
@@ -114,12 +128,13 @@
           std::string index = intToString(i);
           std::string model_name;
 
-          spawn_model_req.initial_pose.position.y = (float)rand()/(float)(RAND_MAX) * 0.4;  // random between -0.4 to 0.4
+         /* spawn_model_req.initial_pose.position.y = (float)rand()/(float)(RAND_MAX) * 0.4;  // random between -0.4 to 0.4
           ROS_INFO_STREAM("y position of new box: "
-          << spawn_model_req.initial_pose.position.y);
+          << spawn_model_req.initial_pose.position.y);*/
 
           model_name = "red_blocks_" + index;  // initialize model_name
           spawn_model_req.model_name = model_name;
+          set_state_req.model_state.model_name=model_name;
           spawn_model_req.robot_namespace = model_name;
           spawn_model_req.model_xml = red_xmlStr;
 
@@ -142,7 +157,7 @@
           apply_wrench_req.body_name = model_name + "::base_link";
 
           // call apply body wrench service
-          call_service = wrenchClient.call(apply_wrench_req, apply_wrench_resp);
+        /*call_service = wrenchClient.call(apply_wrench_req, apply_wrench_resp);
           if (call_service) {
               if (apply_wrench_resp.success) {
                   ROS_INFO_STREAM(model_name << " speed initialized");
@@ -154,7 +169,21 @@
           else {
               ROS_ERROR("fail to connect with gazebo server");
               return 0;
+          }*/
+
+          /*bool call_service2 = setstateClient.call(set_state_req, set_state_resp);
+          if (call_service2) {
+              if (set_state_resp.success) {
+                  ROS_INFO_STREAM(model_name << " speed initialized");
+              }
+              else {
+                  ROS_INFO_STREAM(model_name << " fail to initialize speed");
+              }
           }
+          else {
+              ROS_ERROR("fail to connect with gazebo server");
+              return 0;
+          }*/
 
           // publish current cylinder blocks status, all cylinder blocks will be published
           // no matter if it's successfully spawned, or successfully initialized in speed
