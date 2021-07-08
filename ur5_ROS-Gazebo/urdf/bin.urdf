@@ -9,23 +9,23 @@
 </joint>
 
 
-<link name ="bottom"> <!--2-->
+<link name ="bottom">
   <collision>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 -0.1" rpy="0 0 0"/>
     <geometry>
-      <box size="0.4 0.4 0.02"/> <!--3-->
+      <box size="0.4 0.6 0.0001"/>
     </geometry>
   </collision>
 
   <visual>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 -0.1" rpy="0 0 0"/>
     <geometry>
-      <box size="0.4 0.4 0.02"/>
+      <box size="0.4 0.6 0.0001"/>
     </geometry>
   </visual>
 
   <inertial>
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 -0.1" rpy="0 0 0" />
     <mass value="0.05" />
     <inertia
       ixx="0.001" ixy="0.0"  ixz="0.0"
@@ -41,22 +41,22 @@
 
 
 <link name = "left">
-  <collision> <!--4-->
-    <origin xyz="-0.2 0 0.05" rpy="0 0 0"/>
+  <collision> 
+    <origin xyz="-0.2 0 0.1" rpy="0 0 0"/>
     <geometry>
-      <box size="0.02 0.4 0.2"/>
+      <box size="0.0001 0.6 0.4"/>
     </geometry>
   </collision>
 
   <visual>
-    <origin xyz="-0.2 0 0.05" rpy="0 0 0"/>
+    <origin xyz="-0.2 0 0.1" rpy="0 0 0"/>
     <geometry>
-      <box size="0.02 0.4 0.2"/>
+      <box size="0.0001 0.6 0.4"/>
     </geometry>
   </visual>
 
   <inertial>
-    <origin xyz="-0.2 0 0.05" rpy="0 0 0" />
+    <origin xyz="-0.2 0 0.1" rpy="0 0 0" />
     <mass value="0.05" />
     <inertia
       ixx="0.001" ixy="0.0"  ixz="0.0"
@@ -72,21 +72,21 @@
 
 <link name="right">
   <collision>
-    <origin xyz="0.2 0 0.05" rpy="0 0 0"/>
+    <origin xyz="0.2 0 0.1" rpy="0 0 0"/>
     <geometry>
-      <box size="0.02 0.4 0.2"/>
+      <box size="0.0001 0.6 0.4"/>
     </geometry>
   </collision>
 
   <visual>
-    <origin xyz="0.2 0 0.05" rpy="0 0 0"/>
+    <origin xyz="0.2 0 0.1" rpy="0 0 0"/>
     <geometry>
-      <box size="0.02 0.4 0.2"/>
+      <box size="0.0001 0.6 0.4"/>
     </geometry>
   </visual>
 
   <inertial>
-    <origin xyz="0.2 0 0.05" rpy="0 0 0" />
+    <origin xyz="0.2 0 0.1" rpy="0 0 0" />
     <mass value="0.05" />
     <inertia
       ixx="0.001" ixy="0.0"  ixz="0.0"
@@ -102,21 +102,21 @@
 
 <link name="back">
   <collision>
-    <origin xyz="0 0.2 0.05" rpy="0 0 0"/>
+    <origin xyz="0 0.3 0.1" rpy="0 0 0"/>
     <geometry>
-      <box size="0.4 0.02 0.2"/>
+      <box size="0.4 0.0001 0.4"/>
     </geometry>
   </collision>
 
   <visual>
-    <origin xyz="0 0.2 0.05" rpy="0 0 0"/>
+    <origin xyz="0 0.3 0.1" rpy="0 0 0"/>
     <geometry>
-      <box size="0.4 0.02 0.2"/>
+      <box size="0.4 0.0001 0.4"/>
     </geometry>
   </visual>
 
   <inertial>
-    <origin xyz="0 0.2 0.05" rpy="0 0 0" />
+    <origin xyz="0 0.3 0.1" rpy="0 0 0" />
     <mass value="0.05" />
     <inertia
       ixx="0.001" ixy="0.0"  ixz="0.0"
@@ -132,21 +132,21 @@
 
 <link name="front">
   <collision>
-    <origin xyz="0 -0.2 0.05" rpy= "0 0 0"/>
+    <origin xyz="0 -0.3 0.1" rpy= "0 0 0"/>
     <geometry>
-      <box size="0.4 0.02 0.2"/>
+      <box size="0.4 0.0001 0.4"/>
     </geometry>
   </collision>
 
   <visual>
-    <origin xyz="0 -0.2 0.05" rpy="0 0 0"/>
+    <origin xyz="0 -0.3 0.1" rpy="0 0 0"/>
     <geometry>
-      <box size="0.4 0.02 0.2"/>
+      <box size="0.4 0.0001 0.4"/>
     </geometry>
   </visual>
 
   <inertial>
-    <origin xyz="0 -0.2 0.05" rpy="0 0 0"/>
+    <origin xyz="0 -0.3 0.1" rpy="0 0 0"/>
     <mass value="0.05" />
     <inertia
       ixx="0.001" ixy="0.0"  ixz="0.0"
@@ -161,13 +161,12 @@
   <material>Gazebo/Blue</material>
 </gazebo>
 
-<gazebo reference="right">
+<gazebo reference="left">
   <mu1>10</mu1>
   <mu2>10</mu2>
   <material>Gazebo/Blue</material>
 </gazebo>
-
-<gazebo reference="left">
+<gazebo reference="right">
   <mu1>10</mu1>
   <mu2>10</mu2>
   <material>Gazebo/Blue</material>
