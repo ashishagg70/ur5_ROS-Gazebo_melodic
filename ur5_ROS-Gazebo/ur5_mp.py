@@ -97,12 +97,12 @@ class ur5_mp:
         #plan = self.arm.plan()
 
         #elf.arm.execute(plan)
-        orient = Quaternion(*tf.transformations.quaternion_from_euler(3.14, 1.57, 0))
-        pose_goal = Pose(Point(0,-0.7,0.30-0.2+.01),orient)      
         # pose_goal.orientation.w = 1.000000
         # pose_goal.position.x = 0.000000
         # pose_goal.position.y = -0.7
         # pose_goal.position.z = 0.320000
+        orient = Quaternion(*tf.transformations.quaternion_from_euler(3.14, 1.57, 0))
+        pose_goal = Pose(Point(0,-0.7,0.30-0.2+.01),orient)      
         self.arm.set_pose_reference_frame(reference_frame)
         self.arm.set_pose_target(pose_goal, self.end_effector_link)
         plan = self.arm.go(wait=True)
@@ -116,6 +116,17 @@ class ur5_mp:
         self.arm.go(wait=True)
         self.arm.set_named_target("drop")
         self.arm.go(wait=True)
+        droppose = self.arm.get_current_pose(self.end_effector_link).pose
+        droppose.position.x=-0.5-0
+        droppose.position.y=1.0-0.7
+        #orient = Quaternion(*tf.transformations.quaternion_from_euler(3.14, 1.57, 0))
+        #pose_goal = Pose(Point(-0.5-0,1.0-0.7,1.2-0.2+.01),orient)      
+        self.arm.set_pose_reference_frame(reference_frame)
+        self.arm.set_pose_target(droppose, self.end_effector_link)
+        plan = self.arm.go(wait=True)
+        self.arm.stop()
+        self.arm.clear_pose_targets()
+        rospy.sleep(2)
         tracker.flag2 = 0
         self.cxy_pub.publish(tracker)
         
