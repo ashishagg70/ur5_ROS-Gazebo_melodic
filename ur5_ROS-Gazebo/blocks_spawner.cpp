@@ -42,13 +42,12 @@
       gazebo_msgs::SetModelState::Request set_state_req;
       gazebo_msgs::SetModelState::Response set_state_resp;
 
-      set_state_req.model_state.pose.position.x=2.0;
+      /*set_state_req.model_state.pose.position.x=2.0;
       set_state_req.model_state.pose.position.y=0;
       set_state_req.model_state.pose.position.z=0.2;
       set_state_req.model_state.twist.linear.x=-0.5;
-      set_state_req.model_state.reference_frame="world";
+      set_state_req.model_state.reference_frame="world";*/
 
-    
 
       //publisher for current_blocks
       ros::Publisher current_blocks_publisher = nh.advertise<std_msgs::Int8MultiArray>("current_blocks",1);
@@ -93,8 +92,12 @@
 
       pugi::xml_parse_result result = doc.load_file(red_box_path.c_str());
       //std::string str = doc.child("robot").attribute("name").value();
-      doc.select_node("/robot/link/collision/geometry/box").node().attribute("size").set_value("0.1 0.1 0.1");
-      doc.select_node("/robot/link/visual/geometry/box").node().attribute("size").set_value("0.1 0.1 0.1");
+      double x_size=0.2, y_size=0.3, z_size=0.1;
+      std::string x_size_str=std::to_string(x_size), y_size_str=std::to_string(y_size),  z_size_str=std::to_string(z_size);
+      std::string pos_temp=x_size_str+" "+y_size_str+" "+z_size_str;
+      char * pos=&pos_temp[0];
+      doc.select_node("/robot/link/collision/geometry/box").node().attribute("size").set_value(pos);
+      doc.select_node("/robot/link/visual/geometry/box").node().attribute("size").set_value(pos);
       /*std::ifstream red_inXml(red_box_path.c_str());*/
       std::stringstream red_strStream;
       std::string red_xmlStr;
@@ -102,10 +105,11 @@
       /*red_inXml.open(red_box_path.c_str());*/
       //red_strStream << red_inXml.rdbuf();
       red_xmlStr = red_strStream.str();
-      ROS_INFO_STREAM("ashish: "<<red_xmlStr);
+      //ROS_INFO_STREAM("ashish: "<<red_xmlStr);
      // ROS_INFO_STREAM("urdf: \n" <<red_xmlStr);
       // prepare the pawn model service message
-      spawn_model_req.initial_pose.position.x = 0;
+      spawn_model_req.initial_pose.position.x = 0; 
+      spawn_model_req.initial_pose.position.y = 0;
       spawn_model_req.initial_pose.position.z = 0.2;
       spawn_model_req.initial_pose.orientation.x=0.0;
       spawn_model_req.initial_pose.orientation.y=0.0;
@@ -115,12 +119,12 @@
 
       ros::Time time_temp(0, 0);
       ros::Duration duration_temp(0, 1000000);
-      apply_wrench_req.wrench.force.x = -100;
+      /*apply_wrench_req.wrench.force.x = -100;
       apply_wrench_req.wrench.force.y = 0.0;
       apply_wrench_req.wrench.force.z = 0.0;
       apply_wrench_req.start_time = time_temp;
       apply_wrench_req.duration = duration_temp;
-      apply_wrench_req.reference_frame = "world";
+      apply_wrench_req.reference_frame = "world";*/
 
       int i =0;
 
@@ -134,7 +138,7 @@
 
           model_name = "red_blocks_" + index;  // initialize model_name
           spawn_model_req.model_name = model_name;
-          set_state_req.model_state.model_name=model_name;
+          //set_state_req.model_state.model_name=model_name;
           spawn_model_req.robot_namespace = model_name;
           spawn_model_req.model_xml = red_xmlStr;
 
@@ -154,7 +158,7 @@
           }
 
           // prepare apply body wrench service message
-          apply_wrench_req.body_name = model_name + "::base_link";
+          //apply_wrench_req.body_name = model_name + "::base_link";
 
           // call apply body wrench service
         /*call_service = wrenchClient.call(apply_wrench_req, apply_wrench_resp);
