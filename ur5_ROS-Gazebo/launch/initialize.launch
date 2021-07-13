@@ -45,6 +45,9 @@
   <!-- the red blocks spawner node -->
   <node name="blocks_spawner" pkg="ur5_notebook" type="blocks_spawner" output="screen" />
 
+    <!-- the robot_controller node -->
+  <node name="robot_controller" pkg="ur5_notebook" type="robot_controller.py" output="screen" />
+
   <!-- the cylinder poses publisher node -->
   <node name="blocks_poses_publisher" pkg="ur5_notebook" type="blocks_poses_publisher" output="screen" />
 

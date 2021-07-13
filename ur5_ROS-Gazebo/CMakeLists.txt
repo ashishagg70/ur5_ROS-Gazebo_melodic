@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS gazebo_msgs roscpp geometry_msgs std_srv
 #add_message files
 add_message_files(FILES blocks_poses.msg)
 add_message_files(FILES Tracker.msg)
+add_message_files(FILES blocks_info.msg)
 
 generate_messages(DEPENDENCIES std_msgs)
 

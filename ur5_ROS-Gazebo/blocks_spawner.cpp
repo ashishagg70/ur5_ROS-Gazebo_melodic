@@ -15,9 +15,11 @@
   #include <urdf/model.h>
   #include <gazebo_msgs/SpawnModel.h>
   #include <gazebo_msgs/ApplyBodyWrench.h>
-  #include <std_msgs/Int8MultiArray.h>
+  #include <std_msgs/Float32MultiArray.h>
   #include <gazebo_msgs/SetModelState.h>
+  #include <ur5_notebook/blocks_info.h>
   #include "pugixml.hpp"
+
   //int to string converter
   std::string intToString (int a) {
      std::stringstream ss;
@@ -30,6 +32,8 @@
       ros::NodeHandle nh;
       srand(time(0));
       //service client for service /gazebo/spawn_urdf_model
+      ros::Publisher block_info_publisher
+        = nh.advertise<ur5_notebook::blocks_info>("blocks_info", 1);
       ros::ServiceClient spawnClient = nh.serviceClient<gazebo_msgs::SpawnModel>("/gazebo/spawn_urdf_model");
       gazebo_msgs::SpawnModel::Request spawn_model_req;
       gazebo_msgs::SpawnModel::Response spawn_model_resp;
@@ -50,8 +54,8 @@
 
 
       //publisher for current_blocks
-      ros::Publisher current_blocks_publisher = nh.advertise<std_msgs::Int8MultiArray>("current_blocks",1);
-      std_msgs::Int8MultiArray current_blocks_msg;
+      //ros::Publisher current_blocks_publisher = nh.advertise<std_msgs::Float32MultiArray>("current_blocks",1);
+      std_msgs::Float32MultiArray current_blocks_msg;
       current_blocks_msg.data.clear();
 
       // make sure /gazebo/spawn_urdf_model service is service_ready
@@ -156,6 +160,12 @@
               ROS_ERROR("fail to connect with gazebo server");
               return 0;
           }
+          ur5_notebook:: blocks_info blocks_info_msg;
+          blocks_info_msg.name=model_name;
+          blocks_info_msg.x=x_size;
+          blocks_info_msg.y=y_size;
+          blocks_info_msg.z=z_size;
+          block_info_publisher.publish(blocks_info_msg);
 
           // prepare apply body wrench service message
           //apply_wrench_req.body_name = model_name + "::base_link";
@@ -191,7 +201,7 @@
 
           // publish current cylinder blocks status, all cylinder blocks will be published
           // no matter if it's successfully spawned, or successfully initialized in speed
-          current_blocks_publisher.publish(current_blocks_msg);
+          //current_blocks_publisher.publish(current_blocks_msg);
 
           // loop end, increase index by 1, add blank line
           i = i + 1;
