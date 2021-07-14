@@ -75,7 +75,8 @@ class ur5_mp:
         # pose_goal.position.y = -0.7
         # pose_goal.position.z = 0.320000
         orient = Quaternion(*tf.transformations.quaternion_from_euler(3.14, 1.57, 0))
-        pose_goal = Pose(Point(0,-0.7,0.30-0.2+.01),orient)      
+        print("log infoz"+str(msg.z))
+        pose_goal = Pose(Point(0,-0.7,msg.z+.01),orient)      
         self.arm.set_pose_reference_frame(self.reference_frame)
         self.arm.set_pose_target(pose_goal, self.end_effector_link)
         plan = self.arm.go(wait=True)
@@ -134,8 +135,8 @@ class ur5_mp:
         #elf.arm.set_goal_orientation_tolerance(0.1)
         self.arm.set_goal_tolerance(0.01)
         self.arm.set_planning_time(0.5)
-        self.arm.set_max_acceleration_scaling_factor(.01)
-        self.arm.set_max_velocity_scaling_factor(.2)
+        self.arm.set_max_acceleration_scaling_factor(.00001)
+        self.arm.set_max_velocity_scaling_factor(.5)
 
         # Initialize the move group for the ur5_arm
        
