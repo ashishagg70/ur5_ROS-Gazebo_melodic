@@ -1,0 +1,18 @@
+# library
+set( pugixml_INCLUDE_DIR  "@pugixml_INCLUDE_DIR@" )
+set( pugixml_LIBRARY      "@pugixml_LIBRARY@" )
+set( pugixml_LIBRARY_DIR  "@pugixml_LIBRARY_DIR@" )
+
+
+#Dependencies - None
+
+
+
+#library with dependencies
+set( pugixml_INCLUDE_DIRS  ${pugixml_INCLUDE_DIR})
+set( pugixml_LIBRARIES    ${pugixml_LIBRARY})
+set( pugixml_LIBS    ${pugixml_LIBRARIES})
+set( pugixml_LIBRARY_DIRS ${pugixml_LIBRARY_DIR})
+
+set( pugixml_FOUND "yes")
+

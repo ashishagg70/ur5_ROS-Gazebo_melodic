@@ -26,125 +26,131 @@ import rospy, sys, numpy as np
 import moveit_commander
 from copy import deepcopy
 from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Point, Pose, Quaternion
 import moveit_msgs.msg
+import geometry_msgs
 from sensor_msgs.msg import Image
 from ur5_notebook.msg import Tracker
 from std_msgs.msg import Header
 from trajectory_msgs.msg import JointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
-
+from ur5_notebook.msg import blocks_info
+import tf
 from time import sleep
 tracker = Tracker()
 
 
 
 class ur5_mp:
-    def __init__(self):
-        rospy.init_node("ur5_mp", anonymous=False)
-        self.cxy_sub = rospy.Subscriber('cxy', Tracker, self.tracking_callback, queue_size=1)
-        self.cxy_pub = rospy.Publisher('cxy1', Tracker, queue_size=1)
-        self.phase = 1
-        self.object_cnt = 0
-        self.track_flag = False
-        self.default_pose_flag = True
-        self.cx = 400.0
-        self.cy = 400.0
-        self.points=[]
-        self.state_change_time = rospy.Time.now()
-
-        rospy.loginfo("Starting node moveit_cartesian_path")
-
-        rospy.on_shutdown(self.cleanup)
-
-        # Initialize the move_group API
-        moveit_commander.roscpp_initialize(sys.argv)
-
-        # Initialize the move group for the ur5_arm
-        self.arm = moveit_commander.MoveGroupCommander('manipulator')
-
-        # Get the name of the end-effector link
-        self.end_effector_link = self.arm.get_end_effector_link()
-
-        # Set the reference frame for pose targets
-        reference_frame = "base_link"
-
-        # Set the ur5_arm reference frame accordingly
-        self.arm.set_pose_reference_frame(reference_frame)
-
-        # Allow replanning to increase the odds of a solution
-        self.arm.allow_replanning(True)
-
-        # Allow some leeway in position (meters) and orientation (radians)
-        self.arm.set_goal_position_tolerance(0.01)
-        self.arm.set_goal_orientation_tolerance(0.1)
-        self.arm.set_planning_time(0.1)
-        self.arm.set_max_acceleration_scaling_factor(.5)
-        self.arm.set_max_velocity_scaling_factor(.5)
+    def blocks_info_callback(self, msg):
+        rospy.loginfo("ashish: "+msg.name)
+        
 
         # Get the current pose so we can add it as a waypoint
-        start_pose = self.arm.get_current_pose(self.end_effector_link).pose
-
-        # Initialize the waypoints list
-        self.waypoints= []
-        self.pointx = []
-        self.pointy = []
-        # Set the first waypoint to be the starting pose
-        # Append the pose to the waypoints list
-        wpose = deepcopy(start_pose)
-
-        # Set the next waypoint to the right 0.5 meters
-
-        wpose.position.x = -0.2
-        wpose.position.y = -0.2
-        wpose.position.z = 0.3
-        self.waypoints.append(deepcopy(wpose))
-
-        # wpose.position.x = 0.1052
-        # wpose.position.y = -0.4271
-        # wpose.position.z = 0.4005
-        #
-        # wpose.orientation.x = 0.4811
-        # wpose.orientation.y = 0.5070
-        # wpose.orientation.z = -0.5047
-        # wpose.orientation.w = 0.5000
-
-        # self.waypoints.append(deepcopy(wpose))
-
-
-        if np.sqrt((wpose.position.x-start_pose.position.x)**2+(wpose.position.x-start_pose.position.x)**2 \
-            +(wpose.position.x-start_pose.position.x)**2)<0.1:
-            rospy.loginfo("Warnig: target position overlaps with the initial position!")
-
-        # self.arm.set_pose_target(wpose)
+        #start_pose = self.arm.get_current_pose(self.end_effector_link).pose
+        self.arm.set_named_target("pickup")
+        self.arm.go(wait=True)
 
 
 
 
         # Specify default (idle) joint states
-        self.default_joint_states = self.arm.get_current_joint_values()
-        self.default_joint_states[0] = -1.57691
-        self.default_joint_states[1] = -1.71667
-        self.default_joint_states[2] = 1.79266
-        self.default_joint_states[3] = -1.67721
-        self.default_joint_states[4] = -1.5705
-        self.default_joint_states[5] = 0.0
+        #self.default_joint_states = self.arm.get_current_joint_values()
+        #self.default_joint_states[0] = -1.57691
+        #self.default_joint_states[1] = -1.71667
+        #self.default_joint_states[2] = 1.79266
+        #self.default_joint_states[3] = -1.67721
+        #self.default_joint_states[4] = -1.5705
+        #self.default_joint_states[5] = 0.0
 
-        self.arm.set_joint_value_target(self.default_joint_states)
+        #self.arm.set_joint_value_target(self.default_joint_states)
 
         # Set the internal state to the current state
-        self.arm.set_start_state_to_current_state()
-        plan = self.arm.plan()
+        #self.arm.set_start_state_to_current_state()
+        #plan = self.arm.plan()
 
-        self.arm.execute(plan)
+        #elf.arm.execute(plan)
+        # pose_goal.orientation.w = 1.000000
+        # pose_goal.position.x = 0.000000
+        # pose_goal.position.y = -0.7
+        # pose_goal.position.z = 0.320000
+        orient = Quaternion(*tf.transformations.quaternion_from_euler(3.14, 1.57, 0))
+        print("log infoz"+str(msg.z))
+        pose_goal = Pose(Point(0,-0.7,msg.z+.01),orient)      
+        self.arm.set_pose_reference_frame(self.reference_frame)
+        self.arm.set_pose_target(pose_goal, self.end_effector_link)
+        plan = self.arm.go(wait=True)
+        self.arm.stop()
+        self.arm.clear_pose_targets()
+        #rospy.sleep(2)
+        tracker.flag2 = 1
+        tracker.name=msg.name
+        self.gripper_pub.publish(tracker)
+        #rospy.sleep(2)
+        self.arm.set_named_target("pickup")
+        self.arm.go(wait=True)
+        self.block_pickedup_pub.publish(tracker)
+        self.arm.set_named_target("drop")
+        self.arm.go(wait=True)
+        droppose = self.arm.get_current_pose(self.end_effector_link).pose
+        droppose.position.x=-0.5-0
+        droppose.position.y=1.0-0.7
+        #orient = Quaternion(*tf.transformations.quaternion_from_euler(3.14, 1.57, 0))
+        #pose_goal = Pose(Point(-0.5-0,1.0-0.7,1.2-0.2+.01),orient)      
+        self.arm.set_pose_reference_frame(self.reference_frame)
+        self.arm.set_pose_target(droppose, self.end_effector_link)
+        plan = self.arm.go(wait=True)
+        self.arm.stop()
+        self.arm.clear_pose_targets()
+        #rospy.sleep(2)
+        tracker.flag2 = 0
+        self.gripper_pub.publish(tracker)
+    def __init__(self):
+        rospy.init_node("ur5_mp", anonymous=False)
 
+        rospy.loginfo("Starting node ur5_mp")
+
+        rospy.on_shutdown(self.cleanup)
+        self.gripper_pub = rospy.Publisher('gripperOnOff', Tracker, queue_size=1)
+        self.block_info_sub = rospy.Subscriber('blocks_info', blocks_info, callback= self.blocks_info_callback)
+        self.block_pickedup_pub=rospy.Publisher('block_pickedup', Tracker, queue_size=1)
+        
+        # Initialize the move_group API
+        moveit_commander.roscpp_initialize(sys.argv)
+        self.arm = moveit_commander.MoveGroupCommander('manipulator')
+
+        # Get the name of the end-effector link
+        self.end_effector_link = self.arm.get_end_effector_link()
+        # Set the reference frame for pose targets
+        #reference_frame = "base_link"
+        self.reference_frame = "base_link"
+
+        # Set the ur5_arm reference frame accordingly
+
+        # Allow replanning to increase the odds of a solution
+        self.arm.allow_replanning(True)
+
+        # Allow some leeway in position (meters) and orientation (radians)
+        #self.arm.set_goal_position_tolerance(0.01)
+        #elf.arm.set_goal_orientation_tolerance(0.1)
+        self.arm.set_goal_tolerance(0.01)
+        self.arm.set_planning_time(0.5)
+        self.arm.set_max_acceleration_scaling_factor(.00001)
+        self.arm.set_max_velocity_scaling_factor(.5)
+
+        # Initialize the move group for the ur5_arm
+       
+        
+
+##our code end
         # Specify end states (drop object)
-        self.end_joint_states = deepcopy(self.default_joint_states)
-        self.end_joint_states[0] = -3.65
+        #self.end_joint_states = deepcopy(self.default_joint_states)
+        #self.end_joint_states[0] = -3.65
         # self.end_joint_states[1] = -1.3705
 
-        self.transition_pose = deepcopy(self.default_joint_states)
-        self.transition_pose[0] = -3.65
-        self.transition_pose[4] = -1.95
+        #self.transition_pose = deepcopy(self.default_joint_states)
+        #self.transition_pose[0] = -3.65
+        #self.transition_pose[4] = -1.95
 
     def cleanup(self):
         rospy.loginfo("Stopping the robot")
@@ -210,7 +216,7 @@ class ur5_mp:
                 else:
                     if len(self.pointx)==11:
                         tracker.flag2 = 1
-                        self.cxy_pub.publish(tracker)
+                        self.gripper_pub.publish(tracker)
 
                     if len(self.pointx)<12:
                         x_speed = np.mean(np.asarray(self.pointx[4:8])-np.asarray(self.pointx[3:7]))
@@ -259,7 +265,7 @@ class ur5_mp:
 
                         self.phase = 2
                         tracker.flag2 = 0
-                        self.cxy_pub.publish(tracker)
+                        self.gripper_pub.publish(tracker)
 
 
 

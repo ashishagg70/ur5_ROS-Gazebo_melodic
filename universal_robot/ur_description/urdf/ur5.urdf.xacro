@@ -359,7 +359,7 @@
         <robotNamespace>/ur5/vacuum_gripper</robotNamespace>
         <bodyName>vacuum_gripper</bodyName>
         <topicName>grasping</topicName>
-	<maxForce>50</maxForce>
+	<maxForce>1</maxForce>
         <maxDistance>0.05</maxDistance>
         <minDistance>0.01</minDistance>
       </plugin>
@@ -398,7 +398,7 @@
         <robotNamespace>/ur5/vacuum_gripper1</robotNamespace>
         <bodyName>vacuum_gripper1</bodyName>
         <topicName>grasping1</topicName>
-	<maxForce>50</maxForce>
+	<maxForce>1</maxForce>
         <maxDistance>0.05</maxDistance>
         <minDistance>0.01</minDistance>
       </plugin>
@@ -437,7 +437,7 @@
         <robotNamespace>/ur5/vacuum_gripper2</robotNamespace>
         <bodyName>vacuum_gripper2</bodyName>
         <topicName>grasping2</topicName>
-	<maxForce>50</maxForce>
+	<maxForce>1</maxForce>
         <maxDistance>0.05</maxDistance>
         <minDistance>0.01</minDistance>
       </plugin>
@@ -476,7 +476,7 @@
         <robotNamespace>/ur5/vacuum_gripper3</robotNamespace>
         <bodyName>vacuum_gripper3</bodyName>
         <topicName>grasping2</topicName>
-	<maxForce>50</maxForce>
+	<maxForce>1</maxForce>
         <maxDistance>0.05</maxDistance>
         <minDistance>0.01</minDistance>
       </plugin>
@@ -514,7 +514,7 @@
       <robotNamespace>/ur5/vacuum_gripper4</robotNamespace>
       <bodyName>vacuum_gripper4</bodyName>
       <topicName>grasping4</topicName>
-  <maxForce>50</maxForce>
+  <maxForce>1</maxForce>
       <maxDistance>0.05</maxDistance>
       <minDistance>0.01</minDistance>
     </plugin>
@@ -552,7 +552,7 @@
       <robotNamespace>/ur5/vacuum_gripper5</robotNamespace>
       <bodyName>vacuum_gripper5</bodyName>
       <topicName>grasping5</topicName>
-<maxForce>50</maxForce>
+<maxForce>1</maxForce>
       <maxDistance>0.05</maxDistance>
       <minDistance>0.01</minDistance>
     </plugin>
@@ -591,7 +591,7 @@
       <robotNamespace>/ur5/vacuum_gripper6</robotNamespace>
       <bodyName>vacuum_gripper6</bodyName>
       <topicName>grasping6</topicName>
-<maxForce>50</maxForce>
+<maxForce>1</maxForce>
       <maxDistance>0.05</maxDistance>
       <minDistance>0.01</minDistance>
     </plugin>
@@ -630,7 +630,7 @@
       <robotNamespace>/ur5/vacuum_gripper7</robotNamespace>
       <bodyName>vacuum_gripper7</bodyName>
       <topicName>grasping7</topicName>
-<maxForce>50</maxForce>
+<maxForce>1</maxForce>
       <maxDistance>0.05</maxDistance>
       <minDistance>0.01</minDistance>
     </plugin>
@@ -669,7 +669,7 @@
       <robotNamespace>/ur5/vacuum_gripper8</robotNamespace>
       <bodyName>vacuum_gripper8</bodyName>
       <topicName>grasping8</topicName>
-<maxForce>50</maxForce>
+<maxForce>1</maxForce>
       <maxDistance>0.05</maxDistance>
       <minDistance>0.01</minDistance>
     </plugin>

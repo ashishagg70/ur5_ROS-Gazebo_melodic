@@ -41,16 +41,19 @@
   <!-- spawn the conveyor_belt in gazebo -->
   <node name="spawn_conveyor_belt" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur5_notebook)/urdf/conveyor_belt.urdf -urdf -model conveyor_belt" />
   <!-- spawn the conveyor_belt in gazebo -->
-  <node name="bin" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur5_notebook)/urdf/bin.urdf -urdf -model bin -y 0.8 -x -0.5 -z 0.05" />
+  <node name="bin" pkg="gazebo_ros" type="spawn_model" args="-file $(find ur5_notebook)/urdf/bin.urdf -urdf -model bin -y 1.0 -x -0.5 -z 0.1" />
   <!-- the red blocks spawner node -->
+  <node name="ur5_mp" pkg="ur5_notebook" type="ur5_mp.py" output="screen" />
   <node name="blocks_spawner" pkg="ur5_notebook" type="blocks_spawner" output="screen" />
+
+    <!-- the robot_controller node -->
+  <node name="robot_controller" pkg="ur5_notebook" type="robot_controller.py" output="screen" />
 
   <!-- the cylinder poses publisher node -->
   <node name="blocks_poses_publisher" pkg="ur5_notebook" type="blocks_poses_publisher" output="screen" />
 
   <!-- the cylinder poses publisher node -->
-  <node name="ur5_vision" pkg="ur5_notebook" type="ur5_vision.py" output="screen" />
-  <node name="ur5_mp" pkg="ur5_notebook" type="ur5_mp.py" output="screen" />
+  
   <node name="ur5_gripper" pkg="ur5_notebook" type="ur5_gripper.py" output="screen"/>
   <!-- for ros control to be used with scara robot -->
 <!--   <param name="/scara_robot_left/robot_description" textfile="$(find two_scara_collaboration)/urdf/scara_robot_left.urdf" /> -->

@@ -5,12 +5,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ur5_notebook)
 
 # Find the catkin build system, and any other packages on which we depend.
-find_package(catkin REQUIRED COMPONENTS gazebo_msgs roscpp geometry_msgs std_srvs std_msgs message_generation)
+find_package(catkin REQUIRED COMPONENTS gazebo_msgs roscpp geometry_msgs std_srvs std_msgs message_generation pugixml)
 # Declare our catkin package.
 
 #add_message files
 add_message_files(FILES blocks_poses.msg)
 add_message_files(FILES Tracker.msg)
+add_message_files(FILES blocks_info.msg)
 
 generate_messages(DEPENDENCIES std_msgs)
 
