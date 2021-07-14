@@ -239,6 +239,6 @@ rospy.init_node("ur5_gripper", anonymous=False)
 spawnModel=""
 gripper_status_sub = rospy.Subscriber('/ur5/vacuum_gripper/grasping', Bool, gripper_status, queue_size=1)
 
-cxy_sub = rospy.Subscriber('cxy1', Tracker, trigger, queue_size=1)
+gripper_sub = rospy.Subscriber('gripperOnOff', Tracker, trigger, queue_size=1)
 
 rospy.spin()

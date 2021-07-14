@@ -81,13 +81,14 @@ class ur5_mp:
         plan = self.arm.go(wait=True)
         self.arm.stop()
         self.arm.clear_pose_targets()
-        rospy.sleep(2)
+        #rospy.sleep(2)
         tracker.flag2 = 1
         tracker.name=msg.name
-        self.cxy_pub.publish(tracker)
-        rospy.sleep(2)
+        self.gripper_pub.publish(tracker)
+        #rospy.sleep(2)
         self.arm.set_named_target("pickup")
         self.arm.go(wait=True)
+        self.block_pickedup_pub.publish(tracker)
         self.arm.set_named_target("drop")
         self.arm.go(wait=True)
         droppose = self.arm.get_current_pose(self.end_effector_link).pose
@@ -100,17 +101,19 @@ class ur5_mp:
         plan = self.arm.go(wait=True)
         self.arm.stop()
         self.arm.clear_pose_targets()
-        rospy.sleep(2)
+        #rospy.sleep(2)
         tracker.flag2 = 0
-        self.cxy_pub.publish(tracker)
+        self.gripper_pub.publish(tracker)
     def __init__(self):
         rospy.init_node("ur5_mp", anonymous=False)
 
         rospy.loginfo("Starting node ur5_mp")
 
         rospy.on_shutdown(self.cleanup)
-        self.cxy_pub = rospy.Publisher('cxy1', Tracker, queue_size=1)
+        self.gripper_pub = rospy.Publisher('gripperOnOff', Tracker, queue_size=1)
         self.block_info_sub = rospy.Subscriber('blocks_info', blocks_info, callback= self.blocks_info_callback)
+        self.block_pickedup_pub=rospy.Publisher('block_pickedup', Tracker, queue_size=1)
+        
         # Initialize the move_group API
         moveit_commander.roscpp_initialize(sys.argv)
         self.arm = moveit_commander.MoveGroupCommander('manipulator')
@@ -131,8 +134,8 @@ class ur5_mp:
         #elf.arm.set_goal_orientation_tolerance(0.1)
         self.arm.set_goal_tolerance(0.01)
         self.arm.set_planning_time(0.5)
-        self.arm.set_max_acceleration_scaling_factor(.5)
-        self.arm.set_max_velocity_scaling_factor(.5)
+        self.arm.set_max_acceleration_scaling_factor(.01)
+        self.arm.set_max_velocity_scaling_factor(.2)
 
         # Initialize the move group for the ur5_arm
        
@@ -212,7 +215,7 @@ class ur5_mp:
                 else:
                     if len(self.pointx)==11:
                         tracker.flag2 = 1
-                        self.cxy_pub.publish(tracker)
+                        self.gripper_pub.publish(tracker)
 
                     if len(self.pointx)<12:
                         x_speed = np.mean(np.asarray(self.pointx[4:8])-np.asarray(self.pointx[3:7]))
@@ -261,7 +264,7 @@ class ur5_mp:
 
                         self.phase = 2
                         tracker.flag2 = 0
-                        self.cxy_pub.publish(tracker)
+                        self.gripper_pub.publish(tracker)
 
 
 

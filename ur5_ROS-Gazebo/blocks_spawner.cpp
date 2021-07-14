@@ -18,7 +18,9 @@
   #include <std_msgs/Float32MultiArray.h>
   #include <gazebo_msgs/SetModelState.h>
   #include <ur5_notebook/blocks_info.h>
+    #include <ur5_notebook/Tracker.h>
   #include "pugixml.hpp"
+  #include <vector>
 
   //int to string converter
   std::string intToString (int a) {
@@ -27,34 +29,64 @@
      return ss.str();
   }
 
-  int main(int argc, char **argv) {
-      ros::init(argc, argv, "blocks_spawner");
-      ros::NodeHandle nh;
-      srand(time(0));
-      //service client for service /gazebo/spawn_urdf_model
-      ros::Publisher block_info_publisher
-        = nh.advertise<ur5_notebook::blocks_info>("blocks_info", 1);
-      ros::ServiceClient spawnClient = nh.serviceClient<gazebo_msgs::SpawnModel>("/gazebo/spawn_urdf_model");
+  std::vector<std::vector<int>> streamOfBoxes;
+  ros::Publisher block_info_publisher;
+  ros::ServiceClient spawnClient;
+  ros::ServiceClient wrenchClient;
+  ros::ServiceClient setstateClient;
+  bool get_red_path;
+  std::string red_box_path;
+  std::vector<int> maxSize={20, 20, 20};
+  std::vector<int> minSize={10, 10, 10};
+
+  bool isValidItem(std::vector<int> &item){
+      for (int i=0;i<3;i++){
+          if(item[i]<minSize[i] || item[i]>maxSize[i])
+            return false;
+      }
+      return true;
+  }
+  void generateStreamOfBoxes(){
+
+     std::vector<std::vector<int>> invalid;
+      invalid.push_back(std::vector<int>({40, 60, 40, 0, 0, 0}));
+      while(invalid.size()>0){
+          int invalidItemIndex=rand()%invalid.size();
+          std::vector<int> invalidItem= invalid[invalidItemIndex];
+          invalid.erase(invalid.begin() + invalidItemIndex);
+          std::vector<int> axis;
+          if(invalidItem[0]>maxSize[0])
+            axis.push_back(0);
+          if(invalidItem[1]>maxSize[1])
+            axis.push_back(1);
+          if(invalidItem[2]>maxSize[2])
+            axis.push_back(2);
+          int axisChosen=axis[rand()%axis.size()];
+          int cutLen=rand()%(invalidItem[axisChosen]-2*minSize[axisChosen]);
+          std::vector<int> item1={invalidItem[0], invalidItem[1], invalidItem[2],invalidItem[3], invalidItem[4], invalidItem[5]};
+          std::vector<int> item2={invalidItem[0], invalidItem[1], invalidItem[2],invalidItem[3], invalidItem[4], invalidItem[5]};
+          item1[axisChosen]=minSize[axisChosen]+cutLen;
+          item2[axisChosen]=invalidItem[axisChosen]-item1[axisChosen];
+          item2[3+axisChosen]=item2[3+axisChosen]+item1[axisChosen];
+          if(isValidItem(item1))
+            streamOfBoxes.push_back(item1);
+          else 
+            invalid.push_back(item1);
+          if(isValidItem(item2))
+            streamOfBoxes.push_back(item2);
+          else 
+            invalid.push_back(item2);
+
+      }
+      //streamOfBoxes.push_back(std::vector<int>({20,30,10}));
+  }
+  void pickedUpCallback(const ur5_notebook::Tracker &tracker){
       gazebo_msgs::SpawnModel::Request spawn_model_req;
       gazebo_msgs::SpawnModel::Response spawn_model_resp;
-
-      ros::ServiceClient wrenchClient = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
       gazebo_msgs::ApplyBodyWrench::Request apply_wrench_req;
       gazebo_msgs::ApplyBodyWrench::Response apply_wrench_resp;
-
-      ros::ServiceClient setstateClient = nh.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
       gazebo_msgs::SetModelState::Request set_state_req;
       gazebo_msgs::SetModelState::Response set_state_resp;
-
-      /*set_state_req.model_state.pose.position.x=2.0;
-      set_state_req.model_state.pose.position.y=0;
-      set_state_req.model_state.pose.position.z=0.2;
-      set_state_req.model_state.twist.linear.x=-0.5;
-      set_state_req.model_state.reference_frame="world";*/
-
-
-      //publisher for current_blocks
-      //ros::Publisher current_blocks_publisher = nh.advertise<std_msgs::Float32MultiArray>("current_blocks",1);
       std_msgs::Float32MultiArray current_blocks_msg;
       current_blocks_msg.data.clear();
 
@@ -84,19 +116,17 @@
       ROS_INFO("set_model_state service is ready");
 
       //get file path of blocks from parameter service
-      std::string red_box_path;
-      bool get_red_path;
-      get_red_path = nh.getParam("/red_box_path", red_box_path);
+      
 
       if (!(get_red_path)){
-          return 0;}
+          return ;}
           else{ROS_INFO_STREAM(red_box_path << " has been extracted");
 }
       pugi::xml_document doc;
-
+      static int i =0;
       pugi::xml_parse_result result = doc.load_file(red_box_path.c_str());
       //std::string str = doc.child("robot").attribute("name").value();
-      double x_size=0.2, y_size=0.3, z_size=0.1;
+      double x_size=streamOfBoxes[i][0]/100.0, y_size=streamOfBoxes[i][1]/100.0, z_size=streamOfBoxes[i][2]/100.0;
       std::string x_size_str=std::to_string(x_size), y_size_str=std::to_string(y_size),  z_size_str=std::to_string(z_size);
       std::string pos_temp=x_size_str+" "+y_size_str+" "+z_size_str;
       char * pos=&pos_temp[0];
@@ -130,9 +160,6 @@
       apply_wrench_req.duration = duration_temp;
       apply_wrench_req.reference_frame = "world";*/
 
-      int i =0;
-
-      while (ros::ok()){
           std::string index = intToString(i);
           std::string model_name;
 
@@ -158,7 +185,7 @@
           else {
               ROS_INFO("fail in first call");
               ROS_ERROR("fail to connect with gazebo server");
-              return 0;
+              return ;
           }
           ur5_notebook:: blocks_info blocks_info_msg;
           blocks_info_msg.name=model_name;
@@ -167,51 +194,30 @@
           blocks_info_msg.z=z_size;
           block_info_publisher.publish(blocks_info_msg);
 
-          // prepare apply body wrench service message
-          //apply_wrench_req.body_name = model_name + "::base_link";
-
-          // call apply body wrench service
-        /*call_service = wrenchClient.call(apply_wrench_req, apply_wrench_resp);
-          if (call_service) {
-              if (apply_wrench_resp.success) {
-                  ROS_INFO_STREAM(model_name << " speed initialized");
-              }
-              else {
-                  ROS_INFO_STREAM(model_name << " fail to initialize speed");
-              }
-          }
-          else {
-              ROS_ERROR("fail to connect with gazebo server");
-              return 0;
-          }*/
-
-          /*bool call_service2 = setstateClient.call(set_state_req, set_state_resp);
-          if (call_service2) {
-              if (set_state_resp.success) {
-                  ROS_INFO_STREAM(model_name << " speed initialized");
-              }
-              else {
-                  ROS_INFO_STREAM(model_name << " fail to initialize speed");
-              }
-          }
-          else {
-              ROS_ERROR("fail to connect with gazebo server");
-              return 0;
-          }*/
-
-          // publish current cylinder blocks status, all cylinder blocks will be published
-          // no matter if it's successfully spawned, or successfully initialized in speed
-          //current_blocks_publisher.publish(current_blocks_msg);
-
-          // loop end, increase index by 1, add blank line
           i = i + 1;
           ROS_INFO_STREAM("");
+  }
 
-          ros::spinOnce();
-          ros::Duration(20.0).sleep();  // frequency control, spawn one cylinder in each loop
-          // delay time decides density of the cylinders
+  int main(int argc, char **argv) {
+      ros::init(argc, argv, "blocks_spawner");
+      ros::NodeHandle nh;
 
-
-      }
+      srand(time(0));
+      //service client for service /gazebo/spawn_urdf_model
+      block_info_publisher
+        = nh.advertise<ur5_notebook::blocks_info>("blocks_info", 1);
+      ros::Subscriber current_subscriber = nh.subscribe("block_pickedup"
+        , 1, pickedUpCallback);
+      spawnClient = nh.serviceClient<gazebo_msgs::SpawnModel>("/gazebo/spawn_urdf_model");
+      wrenchClient = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
+      setstateClient = nh.serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
+      get_red_path = nh.getParam("/red_box_path", red_box_path);
+      generateStreamOfBoxes();
+      std::cout<<"streamOfboxes: "<<streamOfBoxes[0][0]<<" "<<streamOfBoxes[0][1]<<" "<<streamOfBoxes[0][2];
+      ur5_notebook::Tracker tracker;
+      tracker.flag2=1;
+      pickedUpCallback(tracker);
+      ros::spin();
+      
       return 0;
   }
