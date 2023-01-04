@@ -10,6 +10,7 @@ Ubuntu 18.04.5 LTS
 
 Build the code
 $ catkin_make
+
 $ source devel/setup.bash
 
 Run the code with ROS and Gazebo
