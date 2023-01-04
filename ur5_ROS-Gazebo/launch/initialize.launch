@@ -13,13 +13,14 @@
     <arg name="world_name" default="worlds/empty.world"/>
     <arg name="paused" value="$(arg paused)"/>
     <arg name="gui" value="$(arg gui)"/>
+    <arg name="physics" value="ode"/>
   </include>
 
   <!-- spwan ur5 -->
   <!-- send robot urdf to param server -->
   <include file="$(find ur_description)/launch/ur5_upload.launch">
     <arg name="limited" value="$(arg limited)"/>
-  </include>
+  </include> 
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 0.2 -y 0.7" respawn="false" output="screen" />

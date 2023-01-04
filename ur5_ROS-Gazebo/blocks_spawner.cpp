@@ -127,6 +127,7 @@
       pugi::xml_parse_result result = doc.load_file(red_box_path.c_str());
       //std::string str = doc.child("robot").attribute("name").value();
       double x_size=streamOfBoxes[i][0]/100.0, y_size=streamOfBoxes[i][1]/100.0, z_size=streamOfBoxes[i][2]/100.0;
+      //double x_size=.1, y_size=.1, z_size=.1;
       std::string x_size_str=std::to_string(x_size), y_size_str=std::to_string(y_size),  z_size_str=std::to_string(z_size);
       std::string pos_temp=x_size_str+" "+y_size_str+" "+z_size_str;
       char * pos=&pos_temp[0];

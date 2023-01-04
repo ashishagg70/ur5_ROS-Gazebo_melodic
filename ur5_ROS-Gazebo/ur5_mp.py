@@ -102,7 +102,7 @@ class ur5_mp:
         plan = self.arm.go(wait=True)
         self.arm.stop()
         self.arm.clear_pose_targets()
-        #rospy.sleep(2)
+        rospy.sleep(2)
         tracker.flag2 = 0
         self.gripper_pub.publish(tracker)
     def __init__(self):

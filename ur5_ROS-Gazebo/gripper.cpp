@@ -25,8 +25,8 @@
 #include <assert.h>
 
 #include <std_msgs/Bool.h>
-#include "gazebo_ros_vacuum_gripper/gazebo_ros_vacuum_gripper.h"
-#include <gazebo_msgs/SpawnModel.h>
+#include <gazebo_plugins/gazebo_ros_vacuum_gripper.h>
+
 
 namespace gazebo
 {
@@ -80,7 +80,7 @@ void GazeboRosVacuumGripper::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
   else
     link_name_ = _sdf->GetElement("bodyName")->Get<std::string>();
 
-  link_ = _model->GetLink(link_name_); //gripper link
+  link_ = _model->GetLink(link_name_);
   if (!link_)
   {
     std::string found;
@@ -101,11 +101,6 @@ void GazeboRosVacuumGripper::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
   }
   else
     topic_name_ = _sdf->GetElement("topicName")->Get<std::string>();
-  if (_sdf->HasElement("maxForce")) {
-    max_force_ = _sdf->GetElement("maxForce")->Get<double>();
-  } else {
-    max_force_ = 2;
-  }
 
   // Make sure the ROS node for Gazebo has already been initialized
   if (!ros::isInitialized())
@@ -127,12 +122,12 @@ void GazeboRosVacuumGripper::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
 
   // Custom Callback Queue
   ros::AdvertiseServiceOptions aso1 =
-    ros::AdvertiseServiceOptions::create<gazebo_msgs::SpawnModel>(
+    ros::AdvertiseServiceOptions::create<std_srvs::Empty>(
     "on", boost::bind(&GazeboRosVacuumGripper::OnServiceCallback,
     this, _1, _2), ros::VoidPtr(), &queue_);
   srv1_ = rosnode_->advertiseService(aso1);
   ros::AdvertiseServiceOptions aso2 =
-    ros::AdvertiseServiceOptions::create<gazebo_msgs::SpawnModel>(
+    ros::AdvertiseServiceOptions::create<std_srvs::Empty>(
     "off", boost::bind(&GazeboRosVacuumGripper::OffServiceCallback,
     this, _1, _2), ros::VoidPtr(), &queue_);
   srv2_ = rosnode_->advertiseService(aso2);
@@ -149,46 +144,23 @@ void GazeboRosVacuumGripper::Load(physics::ModelPtr _model, sdf::ElementPtr _sdf
   ROS_INFO_NAMED("vacuum_gripper", "Loaded gazebo_ros_vacuum_gripper");
 }
 
-bool GazeboRosVacuumGripper::OnServiceCallback(gazebo_msgs::SpawnModel::Request &req,
-                                     gazebo_msgs::SpawnModel::Response &res)
+bool GazeboRosVacuumGripper::OnServiceCallback(std_srvs::Empty::Request &req,
+                                     std_srvs::Empty::Response &res)
 {
   if (status_) {
     ROS_WARN_NAMED("vacuum_gripper", "gazebo_ros_vacuum_gripper: already status is 'on'");
   } else {
     status_ = true;
-    pickup_item_name_=req.model_name;
     ROS_INFO_NAMED("vacuum_gripper", "gazebo_ros_vacuum_gripper: status: off -> on");
   }
   return true;
 }
-bool GazeboRosVacuumGripper::OffServiceCallback(gazebo_msgs::SpawnModel::Request &req,
-                                     gazebo_msgs::SpawnModel::Response &res)
+bool GazeboRosVacuumGripper::OffServiceCallback(std_srvs::Empty::Request &req,
+                                     std_srvs::Empty::Response &res)
 {
   if (status_) {
     status_ = false;
     ROS_INFO_NAMED("vacuum_gripper", "gazebo_ros_vacuum_gripper: status: on -> off");
-    // lock_.lock();
-    //  ignition::math::Pose3d parent_pose = link_->WorldPose();
-    // physics::Model_V models = world_->Models();
-    //  for (size_t i = 0; i < models.size(); i++) {
-    //     if (models[i]->GetName() == link_->GetName() ||
-    //         models[i]->GetName() == parent_->GetName() || models[i]->GetName().find("red_blocks_") || models[i]->GetName()!=pickup_item_name_)
-    //     {
-    //       continue;
-    //     }
-    //     physics::Link_V links = models[i]->GetLinks();
-    //     for (size_t j = 0; j < links.size(); j++) {
-    //       ignition::math::Pose3d link_pose = links[j]->WorldPose();
-    //       ignition::math::Pose3d diff = parent_pose - link_pose;
-    //       double norm = diff.Pos().Length();
-    //       if(norm<0.5){
-    //         links[j]->SetForce(ignition::math::Vector3d(0,0,0));
-    //       }
-    //     }
-    //  }
-    // lock_.unlock();
-
-
   } else {
     ROS_WARN_NAMED("vacuum_gripper", "gazebo_ros_vacuum_gripper: already status is 'off'");
   }
@@ -214,10 +186,9 @@ void GazeboRosVacuumGripper::UpdateChild()
   ignition::math::Pose3d parent_pose = link_->GetWorldPose().Ign();
   physics::Model_V models = world_->GetModels();
 #endif
-  //ROS_FATAL_NAMED("vaccum gripper","pickup item name: %s", pickup_item_name_.c_str());
   for (size_t i = 0; i < models.size(); i++) {
     if (models[i]->GetName() == link_->GetName() ||
-        models[i]->GetName() == parent_->GetName() || models[i]->GetName().find("red_blocks_") || models[i]->GetName()!=pickup_item_name_)
+        models[i]->GetName() == parent_->GetName() || models[i]->GetName().find("red_blocks_"))
     {
       continue;
     }
@@ -225,55 +196,34 @@ void GazeboRosVacuumGripper::UpdateChild()
     for (size_t j = 0; j < links.size(); j++) {
 #if GAZEBO_MAJOR_VERSION >= 8
       ignition::math::Pose3d link_pose = links[j]->WorldPose();
+      //link_pose.Pos().Z(link_pose.Pos().Z()+links[j]->BoundingBox().ZLength()/2.0);
 #else
       ignition::math::Pose3d link_pose = links[j]->GetWorldPose().Ign();
 #endif
       ignition::math::Pose3d diff = parent_pose - link_pose;
       double norm = diff.Pos().Length();
-      
-      //ROS_FATAL_NAMED("vacuum_gripper", "ashish model_name: %s, link_name: %s", models[i]->GetName().c_str(),link_name_.c_str());
-      //ROS_FATAL_NAMED("vacuum_gripper", "ashish maxforce: %lf, norm: %lf, z_gripper: %lf, z_link: %lf", max_force_, norm, parent_pose.Pos().Z(), link_pose.Pos().Z());
-      /*if (norm < 0.5) {
+      if (norm < 0.05) {
 #if GAZEBO_MAJOR_VERSION >= 8
-        //links[j]->SetLinearVel(link_->WorldLinearVel());
-        //links[j]->SetAngularVel(link_->WorldAngularVel());
-        links[j]->SetLinearAccel(ignition::math::Vector3d(0, 0, 0));
-        links[j]->SetAngularAccel(ignition::math::Vector3d(0, 0, 0));
-        links[j]->SetAngularAccel(ignition::math::Vector3d(0, 0, 0));
-        links[j]->SetAngularVel(ignition::math::Vector3d(0, 0, 0));
+        links[j]->SetLinearVel(link_->WorldLinearVel());
+        links[j]->SetAngularVel(link_->WorldAngularVel());
 #else
         links[j]->SetLinearVel(link_->GetWorldLinearVel());
         links[j]->SetAngularVel(link_->GetWorldAngularVel());
 #endif
         double norm_force = 1 / norm;
-        if (norm < 0.05) {
+        if (norm < 0.01) {
           // apply friction like force
           // TODO(unknown): should apply friction actually
-          ignition::math::Vector3d new_pose_box=ignition::math::Vector3d(parent_pose.Pos().X(), parent_pose.Pos().Y(), parent_pose.Pos().Z()+0.01-links[j]->BoundingBox().ZLength()/2.0);
-          link_pose.Set(new_pose_box, link_pose.Rot());
+          link_pose.Set(parent_pose.Pos(), link_pose.Rot());
           links[j]->SetWorldPose(link_pose);
-          ROS_FATAL_NAMED("vacuum_gripper", "ashish maxforce: %lf, norm: %lf, z_gripper: %lf, z_link: %lf", max_force_, norm, parent_pose.Pos().Z(), link_pose.Pos().Z());
         }
-         norm_force = max_force_;
+        if (norm_force > 20) {
+          norm_force = 20;  // max_force
+        }
         ignition::math::Vector3d force = norm_force * diff.Pos().Normalize();
         links[j]->AddForce(force);
         grasping_msg.data = true;
-      }*/
-      if(norm<0.5){
-        links[j]->SetWorldTwist(link_->WorldLinearVel(), link_->WorldAngularVel(), true);
-        links[j]->SetLinearAccel(link_->WorldLinearAccel());
-        links[j]->SetAngularAccel(link_->WorldAngularAccel());
-
-        ignition::math::Vector3d new_pose_box=ignition::math::Vector3d(parent_pose.Pos().X(), parent_pose.Pos().Y(), link_pose.Pos().Z());
-        ignition::math::Pose3d new_link_pose=ignition::math::Pose3d(new_pose_box, parent_pose.Rot());
-        links[j]->SetWorldPose(new_link_pose);
-
-
-        // link_pose.Set(parent_pose.Pos(), link_pose.Rot());
-        // links[j]->SetWorldPose(link_pose);
-        links[j]->AddForce(20*link_pose.Rot().RotateVector((parent_pose - link_pose).Pos()));
       }
-      grasping_msg.data = true;
     }
   }
   pub_.publish(grasping_msg);
